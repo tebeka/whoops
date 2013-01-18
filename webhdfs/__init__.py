@@ -31,8 +31,23 @@ class WebHDFS(object):
         return self._op('GET', '/', 'GETHOMEDIRECTORY')
 
     def chmod(self, path, mode):
-        return self._op('PUT', path, 'SETPERMISSION',
+        return self._op('PUT', path, 'SETPERMISSION', is_json=False,
                         permission='{:o}'.format(mode))
+
+    def chown(self, path, user=None, group=None):
+        query = {}
+        if user:
+            query['owner'] = user
+        if group:
+            query['group'] = group
+
+        if not query:
+            raise WebHDFSError('need to specify at least one of user or group')
+
+        return self._op('PUT', path, 'SETOWNER', is_json=False, **query)
+
+    def read(self, path):
+        pass
 
     def _call(self, method, url):
         resp = requests.request(method, url, allow_redirects=False)
@@ -54,7 +69,7 @@ class WebHDFS(object):
 
         return resp
 
-    def _op(self, method, path, op, getters=None, **query):
+    def _op(self, method, path, op, getters=None, is_json=True, **query):
         url = '{}{}?op={}'.format(self.base_url, path, op)
 
         if self.user:
@@ -67,8 +82,10 @@ class WebHDFS(object):
         if not resp.ok:
             raise WebHDFSError
 
+        if not is_json:
+            return resp.content
 
-        reply = resp.json() if resp.content else {}
+        reply = resp.json()
         for key in (getters or []):
             reply = reply[key]
 

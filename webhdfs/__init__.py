@@ -1,5 +1,6 @@
 import requests
 import sys
+from os.path import isfile
 
 if sys.version_info[0] > 2:
     from urllib.parse import urlparse, urlencode
@@ -47,7 +48,7 @@ class WebHDFS(object):
         if not query:
             raise WebHDFSError('need to specify at least one of user or group')
 
-        self._op('PUT', path, 'SETOWNER', is_json=False, **query)
+        self._op('PUT', path, 'SETOWNER', is_json=False, query=query)
 
     def read(self, path, offset=0, length=0, buffersize=0):
         # FIXME: Find a way to unite handling of optional parameters
@@ -59,12 +60,28 @@ class WebHDFS(object):
         if buffersize:
             query['buffersize'] = str(buffersize)
 
-        return self._op('GET', path, 'OPEN', is_json=False, **query)
+        return self._op('GET', path, 'OPEN', is_json=False, query=query)
+
+    def put(self, local, path, overwrite=False, blocksize=0, replication=None,
+            permission=0, buffersize=0):
+
+        if not isfile(local):
+            raise WebHDFSError('put error: {} not found'.format(local))
+
+        query = {'overwrite': 'true' if overwrite else 'false'}
+        if blocksize:
+            query['blocksize'] = str(blocksize)
+        if replication:
+            query['replication'] = str(replication)
+        if permission:
+            query['permission'] = '{:0o}'.format(permission)
+        if buffersize:
+            query['buffersize'] = str(buffersize)
 
 
 
-    def _call(self, method, url):
-        resp = requests.request(method, url, allow_redirects=False)
+    def _call(self, method, url, opts):
+        resp = requests.request(method, url, allow_redirects=False, **opts)
         while True:
             if not resp.ok:
                 raise WebHDFSError(resp.reason)
@@ -83,7 +100,10 @@ class WebHDFS(object):
 
         return resp
 
-    def _op(self, method, path, op, getters=None, is_json=True, **query):
+    def _op(self, method, path, op, getters=None, is_json=False, query=None,
+            opts=None):
+        opts = opts or {}
+
         url = '{}{}?op={}'.format(self.base_url, path, op)
 
         if self.user:
@@ -92,7 +112,7 @@ class WebHDFS(object):
         if query:
             url += '&{}'.format(urlencode(query))
 
-        resp = self._call(method, url)
+        resp = self._call(method, url, opts)
         if not resp.ok:
             raise WebHDFSError
 

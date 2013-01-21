@@ -9,8 +9,10 @@ else:
 
 HOST, PORT = 'localhost', 50070
 
+
 class WebHDFSError(Exception):
     pass
+
 
 class WebHDFS(object):
     def __init__(self, host=HOST, port=PORT, **kw):
@@ -19,7 +21,8 @@ class WebHDFS(object):
         self.user = kw.get('user')
 
     def listdir(self, path):
-        return self._op('GET', path, 'LISTSTATUS', ['FileStatuses', 'FileStatus'])
+        return self._op('GET', path, 'LISTSTATUS',
+                        ['FileStatuses', 'FileStatus'])
 
     def stat(self, path):
         return self._op('GET', path, 'GETFILESTATUS', ['FileStatus'])
@@ -44,10 +47,21 @@ class WebHDFS(object):
         if not query:
             raise WebHDFSError('need to specify at least one of user or group')
 
-        return self._op('PUT', path, 'SETOWNER', is_json=False, **query)
+        self._op('PUT', path, 'SETOWNER', is_json=False, **query)
 
-    def read(self, path):
-        pass
+    def read(self, path, offset=0, length=0, buffersize=0):
+        # FIXME: Find a way to unite handling of optional parameters
+        query = {}
+        if offset:
+            query['offset'] = str(offset)
+        if length:
+            query['length'] = str(length)
+        if buffersize:
+            query['buffersize'] = str(buffersize)
+
+        return self._op('GET', path, 'OPEN', is_json=False, **query)
+
+
 
     def _call(self, method, url):
         resp = requests.request(method, url, allow_redirects=False)
@@ -58,8 +72,8 @@ class WebHDFS(object):
             if resp.status_code != 307:
                 return resp
 
-            # The host in the redirect URL is *internal* one, so we need to fix the
-            # url. Otherwise we'd just follow the redirects
+            # The host in the redirect URL is *internal* one, so we need to fix
+            # the url. Otherwise we'd just follow the redirects
             url = urlparse(resp.headers['Location'])
             host, port = url.netloc.split(':')
             url = url._replace(netloc='{}:{}'.format(self.host, port))
@@ -99,4 +113,3 @@ class WebHDFS(object):
 
     def _gen_base(self, host, port):
         return 'http://{}:{}/webhdfs/v1'.format(host, port)
-

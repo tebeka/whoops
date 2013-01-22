@@ -115,6 +115,11 @@ class WebHDFS(object):
 
         return self._op('PUT', path, 'MKDIRS', query)
 
+    @jsonpath(['boolean'])
+    def rename(self, path, to):
+        query = {'destination': to}
+        return self._op('PUT', path, 'RENAME', query)
+
     # Below here are some utility functions
     def _put(self, op, method, local, path, query):
         if not isfile(local):

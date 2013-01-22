@@ -107,7 +107,15 @@ class WebHDFS(object):
             query['buffersize'] = intparam(buffersize)
         self._put('APPEND', 'POST', local, path, query)
 
+    @jsonpath(['boolean'])
+    def mkdir(self, path, permission=0):
+        query = {}
+        if permission:
+            query = {'permission': octperm(permission)}
 
+        return self._op('PUT', path, 'MKDIRS', query)
+
+    # Below here are some utility functions
     def _put(self, op, method, local, path, query):
         if not isfile(local):
             raise WebHDFSError('put error: {} not found'.format(local))
@@ -134,9 +142,7 @@ class WebHDFS(object):
             raise WebHDFSError(resp.reason)
         return resp
 
-    def _op(self, method, path, op, query=None, opts=None):
-        opts = opts or {}
-
+    def _op(self, method, path, op, query=None):
         url = '{}{}?op={}'.format(self.base_url, path, op)
 
         if self.user:
@@ -145,7 +151,7 @@ class WebHDFS(object):
         if query:
             url += '&{}'.format(urlencode(query))
 
-        resp = requests.request(method, url, allow_redirects=False, **opts)
+        resp = requests.request(method, url, allow_redirects=False)
         return self._check_resp(resp)
 
     def _gen_base(self, host, port):

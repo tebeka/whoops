@@ -18,8 +18,10 @@ conn = WebHDFS('192.168.1.121', user='hdfs')
 # conn.chown('/tmp/z8', 'cloudera')
 # print('open')
 # print(conn.read('/tmp/z8').decode('utf-8'))
-remote = '/tmp/z138'
+# remote = '/tmp/z138'
 # print('put')
 # conn.put('README.rst', remote, overwrite=True)
-print('append')
-conn.append(__file__, remote)
+# print('append')
+# conn.append(__file__, remote)
+print('mkdir')
+print(conn.mkdir('/tmp/zolo'))

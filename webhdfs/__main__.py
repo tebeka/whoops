@@ -53,6 +53,11 @@ def home(args):
 def chmod(args):
     fs.chmod(args.mode, args.path)
 
+def chown(args):
+    if not (args.user or args.group):
+        raise WebHDFSError('need either user or group')
+    fs.chown(args.path, args.user, args.group)
+
 def main(argv=None):
     global fs
     import sys
@@ -88,6 +93,12 @@ def main(argv=None):
     chmod_parser.add_argument('mode', type=lambda v: int(v, 8))
     chmod_parser.add_argument('path')
     chmod_parser.set_defaults(func=chmod)
+
+    chown_parser = subs.add_parser('chown')
+    chown_parser.add_argument('path')
+    chown_parser.add_argument('-u', '--user', help='user')
+    chown_parser.add_argument('-g', '--group', help='group')
+    chown_parser.set_defaults(func=chown)
 
 
     args = parser.parse_args(argv[1:])

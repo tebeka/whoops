@@ -78,6 +78,21 @@ def put(args):
     fs.put(args.src, args.dest, args.overwrite, args.blocksize,
            args.replication, args.mode, args.buffersize)
 
+def append(args):
+    if not isfile(args.src):
+        raise WebHDFSError('{} is not a file'.format(args.src))
+
+    fs.append(args.src, args.dest, args.buffersize)
+
+def mkdir(args):
+    fs.mkdir(args.path, args.mode)
+
+def mv(args):
+    fs.rename(args.src, args.dest)
+
+def rm(args):
+    fs.delete(args.path, args.recursive)
+
 def main(argv=None):
     global fs
     import sys
@@ -141,6 +156,27 @@ def main(argv=None):
     put_parser.add_argument('-m', '--mode', type=lambda v: int(v, 8))
     put_parser.set_defaults(func=put)
 
+    append_parser = subs.add_parser('append')
+    append_parser.add_argument('src')
+    append_parser.add_argument('dest')
+    append_parser.add_argument('-b', '--buffersize', type=int, default=0)
+    append_parser.set_defaults(func=append)
+
+    mkdir_parser = subs.add_parser('mkdir')
+    mkdir_parser.add_argument('path')
+    mkdir_parser.add_argument('-m', '--mode', type=lambda v: int(v, 8))
+    mkdir_parser.set_defaults(func=mkdir)
+
+    mv_parser = subs.add_parser('mv')
+    mv_parser.add_argument('src')
+    mv_parser.add_argument('dest')
+    mv_parser.set_defaults(func=mv)
+
+    rm_parser = subs.add_parser('rm')
+    rm_parser.add_argument('path')
+    rm_parser.add_argument('-r', '--recursive', action='store_true',
+                           default=False)
+    rm_parser.set_defaults(func=rm)
 
     args = parser.parse_args(argv[1:])
 

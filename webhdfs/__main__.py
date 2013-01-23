@@ -1,15 +1,17 @@
 #!/usr/bin/env python
 
-from webhdfs import WebHDFS, WebHDFSError
+from webhdfs import WebHDFS, WebHDFSError, HOST, PORT
 from requests import ConnectionError
 
 from argparse import ArgumentParser
 from fnmatch import fnmatch
+from os import environ
 from os.path import basename, dirname, isfile
 from time import localtime, strftime
 import re
 
 fs = None
+
 
 def stat_long(stat, path):
     time = stat['modificationTime']/1000
@@ -17,6 +19,7 @@ def stat_long(stat, path):
     stat['path'] = stat['pathSuffix'] or path
     fmt = '{permission:4} {length:10} {owner:8} {group:10} {mod} {path}'
     return fmt.format(**stat)
+
 
 def stat_short(stat, path):
     return stat['pathSuffix'] or path
@@ -37,6 +40,7 @@ def ls(args):
             continue
         print(fmt(stat, args.path))
 
+
 def stat(args):
     info = fs.stat(args.path)
     msize = max(len(key) for key in info)
@@ -44,19 +48,24 @@ def stat(args):
     for key, value in info.items():
         print(fmt.format(key, value))
 
+
 def checksum(args):
     print(fs.checksum(args.path)['bytes'])
+
 
 def home(args):
     print(fs.home())
 
+
 def chmod(args):
     fs.chmod(args.mode, args.path)
+
 
 def chown(args):
     if not (args.user or args.group):
         raise WebHDFSError('need either user or group')
     fs.chown(args.path, args.user, args.group)
+
 
 def get(args):
     mode = 'ab' if args.append else 'wb'
@@ -71,6 +80,7 @@ def get(args):
     finally:
         out.close()
 
+
 def put(args):
     if not isfile(args.src):
         raise WebHDFSError('{} is not a file'.format(args.src))
@@ -78,20 +88,25 @@ def put(args):
     fs.put(args.src, args.dest, args.overwrite, args.blocksize,
            args.replication, args.mode, args.buffersize)
 
+
 def append(args):
     if not isfile(args.src):
         raise WebHDFSError('{} is not a file'.format(args.src))
 
     fs.append(args.src, args.dest, args.buffersize)
 
+
 def mkdir(args):
     fs.mkdir(args.path, args.mode)
+
 
 def mv(args):
     fs.rename(args.src, args.dest)
 
+
 def rm(args):
     fs.delete(args.path, args.recursive)
+
 
 def main(argv=None):
     global fs
@@ -100,9 +115,9 @@ def main(argv=None):
     argv = argv or sys.argv
 
     parser = ArgumentParser(description='webhdfs client')
-    parser.add_argument('--host', help='webhdfs host', default='localhost')
+    parser.add_argument('--host', help='webhdfs host', default=None)
     parser.add_argument('--port', help='webhdfs port', type=int,
-                        default='50070')
+                        default=None)
     parser.add_argument('--user', help='webhdfs user', default=None)
 
     subs = parser.add_subparsers()
@@ -180,16 +195,20 @@ def main(argv=None):
 
     args = parser.parse_args(argv[1:])
 
-    fs = WebHDFS(args.host, args.port, user=args.user)
+    host = args.host or environ.get('WEBHDFS_HOST') or HOST
+    port = args.port or environ.get('WEBHDFS_PORT') or PORT
+    user = args.user or environ.get('WEBHDFS_USER') or None
+
+    fs = WebHDFS(host, port, user)
 
     try:
         args.func(args)
     except WebHDFSError as err:
         raise SystemExit('error: {}'.format(err))
     except ConnectionError as err:
-        raise SystemExit('error: cannot connect - {}'.format(err.args[0].reason))
+        raise SystemExit(
+            'error: cannot connect - {}'.format(err.args[0].reason))
 
 
 if __name__ == '__main__':
     main()
-

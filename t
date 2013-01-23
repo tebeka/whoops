@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 
-from webhdfs import WebHDFS
+from whoops import WebHDFS
 
 conn = WebHDFS('192.168.1.143', user='hdfs')
 remote = '/tmp/z138'
@@ -19,7 +19,7 @@ print(conn.home())
 print('chmod')
 conn.chmod(0o777, remote)
 print('chown')
-conn.chown('cloudera', remote)
+conn.chown(remote, 'cloudera')
 print('open')
 print(conn.read(remote).decode('utf-8'))
 print('append')

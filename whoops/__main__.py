@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from webhdfs import WebHDFS, WebHDFSError, HOST, PORT, __version__
+from whoops import WebHDFS, WebHDFSError, HOST, PORT, __version__
 from requests import ConnectionError
 
 from argparse import ArgumentParser
@@ -11,7 +11,6 @@ from time import localtime, strftime
 import re
 
 fs = None
-
 
 def stat_long(stat, path):
     time = stat['modificationTime']/1000
@@ -120,7 +119,7 @@ def main(argv=None):
                         default=None)
     parser.add_argument('--user', help='webhdfs user', default=None)
     parser.add_argument('--version', action='version',
-                        version='webhdfs {}'.format(__version__))
+                        version='whoops {}'.format(__version__))
 
     subs = parser.add_subparsers()
 

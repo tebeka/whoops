@@ -2,4 +2,4 @@ syntax: glob
 
 build
 dist
-webhdfs.egg-info
+whoops.egg-info

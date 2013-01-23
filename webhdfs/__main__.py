@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from webhdfs import WebHDFS, WebHDFSError, HOST, PORT
+from webhdfs import WebHDFS, WebHDFSError, HOST, PORT, __version__
 from requests import ConnectionError
 
 from argparse import ArgumentParser
@@ -119,6 +119,8 @@ def main(argv=None):
     parser.add_argument('--port', help='webhdfs port', type=int,
                         default=None)
     parser.add_argument('--user', help='webhdfs user', default=None)
+    parser.add_argument('--version', action='version',
+                        version='webhdfs {}'.format(__version__))
 
     subs = parser.add_subparsers()
 

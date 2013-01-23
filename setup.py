@@ -3,9 +3,11 @@ try:
 except ImportError:
     from distutils.core import setup
 
+import webhdfs
+
 setup(
     name='webhdfs',
-    version='0.1.0',
+    version=webhdfs.__version__,
     description='WebHDFS client',
     long_description=open('README.rst').read(),
     author='Miki Tebeka',

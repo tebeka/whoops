@@ -19,6 +19,8 @@ def jsonpath(path):
     def wrapper(fn):
         def wrapped(*args, **kw):
             resp = fn(*args, **kw)
+            if not resp.ok:
+                raise WebHDFSError(resp.reason)
 
             reply = resp.json()
             for key in path:
@@ -57,7 +59,7 @@ class WebHDFS(object):
     def home(self):
         return self._op('GET', '/', 'GETHOMEDIRECTORY')
 
-    def chmod(self, path, mode):
+    def chmod(self, mode, path):
         query = {'permission':  octperm(mode)}
         self._op('PUT', path, 'SETPERMISSION', query)
 

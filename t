@@ -3,7 +3,7 @@
 
 from webhdfs import WebHDFS
 
-conn = WebHDFS('192.168.1.121', user='hdfs')
+conn = WebHDFS('192.168.1.134', user='hdfs')
 remote = '/tmp/z138'
 # print('listdir')
 # print(conn.listdir('/tmp'))
@@ -13,10 +13,10 @@ remote = '/tmp/z138'
 # print(conn.checksum(remote))
 # print('home')
 # print(conn.home())
-# print('chmod')
-# conn.chmod(remote, 0o777)
+print('chmod')
+conn.chmod(0o777, remote)
 # print('chown')
-# conn.chown(remote, 'cloudera')
+# conn.chown('cloudera', remote)
 # print('open')
 # print(conn.read(remote).decode('utf-8'))
 # print('put')

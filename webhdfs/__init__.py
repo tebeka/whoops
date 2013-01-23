@@ -89,7 +89,7 @@ class WebHDFS(object):
         url = self._get_redirect(resp)
         return requests.get(url).content
 
-    def put(self, local, path, overwrite=False, blocksize=0, replication=None,
+    def put(self, local, path, overwrite=False, blocksize=0, replication=0,
             permission=0, buffersize=0):
 
         query = {'overwrite': boolparam(overwrite)}

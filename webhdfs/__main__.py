@@ -5,7 +5,7 @@ from requests import ConnectionError
 
 from argparse import ArgumentParser
 from fnmatch import fnmatch
-from os.path import basename, dirname
+from os.path import basename, dirname, isfile
 from time import localtime, strftime
 import re
 
@@ -58,6 +58,26 @@ def chown(args):
         raise WebHDFSError('need either user or group')
     fs.chown(args.path, args.user, args.group)
 
+def get(args):
+    mode = 'ab' if args.append else 'wb'
+    try:
+        out = open(args.dest, mode)
+    except IOError as err:
+        raise WebHDFSError('cannot open {} - {}'.format(args.dest, err))
+
+    try:
+        data = fs.read(args.src, args.offset, args.length, args.buffersize)
+        out.write(data)
+    finally:
+        out.close()
+
+def put(args):
+    if not isfile(args.src):
+        raise WebHDFSError('{} is not a file'.format(args.src))
+
+    fs.put(args.src, args.dest, args.overwrite, args.blocksize,
+           args.replication, args.mode, args.buffersize)
+
 def main(argv=None):
     global fs
     import sys
@@ -99,6 +119,27 @@ def main(argv=None):
     chown_parser.add_argument('-u', '--user', help='user')
     chown_parser.add_argument('-g', '--group', help='group')
     chown_parser.set_defaults(func=chown)
+
+    get_parser = subs.add_parser('get')
+    get_parser.add_argument('src')
+    get_parser.add_argument('dest')
+    get_parser.add_argument('-o', '--offset', type=int, default=0)
+    get_parser.add_argument('-l', '--length', type=int, default=0)
+    get_parser.add_argument('-b', '--buffersize', type=int, default=0)
+    get_parser.add_argument('-a', '--append', action='store_true',
+                            default=False)
+    get_parser.set_defaults(func=get)
+
+    put_parser = subs.add_parser('put')
+    put_parser.add_argument('src')
+    put_parser.add_argument('dest')
+    put_parser.add_argument('-o', '--overwrite', action='store_true',
+                            default=False)
+    put_parser.add_argument('-k', '--blocksize', type=int, default=0)
+    put_parser.add_argument('-r', '--replication', type=int, default=0)
+    put_parser.add_argument('-b', '--buffersize', type=int, default=0)
+    put_parser.add_argument('-m', '--mode', type=lambda v: int(v, 8))
+    put_parser.set_defaults(func=put)
 
 
     args = parser.parse_args(argv[1:])

@@ -30,6 +30,7 @@ def jsonpath(path):
 
 octperm = '{:03o}'.format
 intparam = '{:d}'.format
+boolparam = {True: 'true', False: 'false'}.get
 
 
 class WebHDFS(object):
@@ -89,7 +90,7 @@ class WebHDFS(object):
     def put(self, local, path, overwrite=False, blocksize=0, replication=None,
             permission=0, buffersize=0):
 
-        query = {'overwrite': 'true' if overwrite else 'false'}
+        query = {'overwrite': boolparam(overwrite)}
         if blocksize:
             query['blocksize'] = intparam(blocksize)
         if replication:
@@ -119,6 +120,12 @@ class WebHDFS(object):
     def rename(self, path, to):
         query = {'destination': to}
         return self._op('PUT', path, 'RENAME', query)
+
+    @jsonpath(['boolean'])
+    def delete(self, path, recursive=False):
+        query = {'recursive': boolparam(recursive)}
+        return self._op('DELETE', path, 'DELETE', query)
+
 
     # Below here are some utility functions
     def _put(self, op, method, local, path, query):

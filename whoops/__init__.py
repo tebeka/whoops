@@ -1,8 +1,7 @@
 import requests
+
 import sys
 from os.path import isfile
-
-__version__ = '0.1.0'
 
 if sys.version_info[0] > 2:
     from urllib.parse import urlparse, urlencode
@@ -10,6 +9,7 @@ else:
     from urlparse import urlparse
     from urllib import urlencode
 
+__version__ = '0.1.0'
 HOST, PORT = 'localhost', 50070
 
 

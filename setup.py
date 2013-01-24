@@ -3,21 +3,19 @@ try:
 except ImportError:
     from distutils.core import setup
 
-import webhdfs
-
 setup(
-    name='webhdfs',
-    version=webhdfs.__version__,
+    name='whoops',
+    version='0.1.0',
     description='WebHDFS client',
     long_description=open('README.rst').read(),
     author='Miki Tebeka',
     author_email='miki.tebeka@gmail.com',
     license='MIT',
-    url='https://bitbucket.org/tebeka/webhdfs',
-    packages=['webhdfs'],
+    url='https://bitbucket.org/tebeka/whoops',
+    packages=['whoops'],
     entry_points={
         'console_scripts': [
-            'webhdfs = webhdfs.__main__:main',
+            'whoops = whoops.__main__:main',
         ]
     },
     classifiers=[

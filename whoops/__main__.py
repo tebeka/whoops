@@ -200,7 +200,7 @@ def main(argv=None):
     port = args.port or environ.get('WEBHDFS_PORT') or PORT
     user = args.user or environ.get('WEBHDFS_USER') or None
 
-    fs = WebHDFS(host, port, user)
+    fs = WebHDFS(host, port, user=user)
 
     try:
         args.func(args)

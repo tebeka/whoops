@@ -3,7 +3,7 @@
 
 from whoops import WebHDFS
 
-conn = WebHDFS('192.168.1.143', user='hdfs')
+conn = WebHDFS('cdh4', user='hdfs')
 remote = '/tmp/z138'
 new = '/tmp/8z'
 print('put')

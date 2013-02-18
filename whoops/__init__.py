@@ -32,8 +32,8 @@ def jsonpath(path):
     return wrapper
 
 
-octperm = '{:03o}'.format
-intparam = '{:d}'.format
+octperm = '{0:03o}'.format
+intparam = '{0:d}'.format
 boolparam = {True: 'true', False: 'false'}.get
 
 
@@ -134,7 +134,7 @@ class WebHDFS(object):
     # Below here are some utility functions
     def _put(self, op, method, local, path, query):
         if not isfile(local):
-            raise WebHDFSError('put error: {} not found'.format(local))
+            raise WebHDFSError('put error: {0} not found'.format(local))
 
         resp = self._op(method, path, op, query)
         url = self._get_redirect(resp)
@@ -150,7 +150,7 @@ class WebHDFS(object):
         # the url. Otherwise we'd just follow the redirects
         url = urlparse(resp.headers['Location'])
         host, port = url.netloc.split(':')
-        url = url._replace(netloc='{}:{}'.format(self.host, port))
+        url = url._replace(netloc='{0}:{1}'.format(self.host, port))
         return url.geturl()
 
     def _check_resp(self, resp):
@@ -159,16 +159,16 @@ class WebHDFS(object):
         return resp
 
     def _op(self, method, path, op, query=None):
-        url = '{}{}?op={}'.format(self.base_url, path, op)
+        url = '{0}{1}?op={2}'.format(self.base_url, path, op)
 
         if self.user:
-            url += '&user.name={}'.format(self.user)
+            url += '&user.name={0}'.format(self.user)
 
         if query:
-            url += '&{}'.format(urlencode(query))
+            url += '&{0}'.format(urlencode(query))
 
         resp = requests.request(method, url, allow_redirects=False)
         return self._check_resp(resp)
 
     def _gen_base(self, host, port):
-        return 'http://{}:{}/webhdfs/v1'.format(host, port)
+        return 'http://{0}:{1}/webhdfs/v1'.format(host, port)

@@ -43,7 +43,7 @@ def ls(args):
 def stat(args):
     info = fs.stat(args.path)
     msize = max(len(key) for key in info)
-    fmt = '{{:{}}}: {{}}'.format(msize)
+    fmt = '{{0:{}}}: {{1}}'.format(msize)
     for key, value in info.items():
         print(fmt.format(key, value))
 
@@ -71,7 +71,7 @@ def get(args):
     try:
         out = open(args.dest, mode)
     except IOError as err:
-        raise WebHDFSError('cannot open {} - {}'.format(args.dest, err))
+        raise WebHDFSError('cannot open {0} - {1}'.format(args.dest, err))
 
     try:
         data = fs.read(args.src, args.offset, args.length, args.buffersize)
@@ -82,7 +82,7 @@ def get(args):
 
 def put(args):
     if not isfile(args.src):
-        raise WebHDFSError('{} is not a file'.format(args.src))
+        raise WebHDFSError('{0} is not a file'.format(args.src))
 
     fs.put(args.src, args.dest, args.overwrite, args.blocksize,
            args.replication, args.mode, args.buffersize)
@@ -90,7 +90,7 @@ def put(args):
 
 def append(args):
     if not isfile(args.src):
-        raise WebHDFSError('{} is not a file'.format(args.src))
+        raise WebHDFSError('{0} is not a file'.format(args.src))
 
     fs.append(args.src, args.dest, args.buffersize)
 
@@ -119,7 +119,7 @@ def main(argv=None):
                         default=None)
     parser.add_argument('--user', help='webhdfs user', default=None)
     parser.add_argument('--version', action='version',
-                        version='whoops {}'.format(__version__))
+                        version='whoops {0}'.format(__version__))
 
     subs = parser.add_subparsers()
 
@@ -205,10 +205,10 @@ def main(argv=None):
     try:
         args.func(args)
     except WebHDFSError as err:
-        raise SystemExit('error: {}'.format(err))
+        raise SystemExit('error: {0}'.format(err))
     except ConnectionError as err:
         raise SystemExit(
-            'error: cannot connect - {}'.format(err.args[0].reason))
+            'error: cannot connect - {0}'.format(err.args[0].reason))
 
 
 if __name__ == '__main__':

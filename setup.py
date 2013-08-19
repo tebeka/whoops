@@ -11,7 +11,7 @@ if version_info[:2] < (2, 7):
 
 setup(
     name='whoops',
-    version='0.2.0',
+    version='0.2.1',
     description='WebHDFS client',
     long_description=open('README.rst').read(),
     author='Miki Tebeka',

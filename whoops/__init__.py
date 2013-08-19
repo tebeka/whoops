@@ -52,9 +52,9 @@ class WebHDFS(object):
         return self._op('GET', path, 'GETFILESTATUS')
 
     @jsonpath(['FileChecksum'])
-    def checksum(self, path):
+    def checksum(self, path, follow_redirects=False):
         resp = self._op('GET', path, 'GETFILECHECKSUM')
-        url = self._get_redirect(resp)
+        url = self._get_redirect(resp, follow_redirects=follow_redirects)
         return requests.get(url)
 
     @jsonpath(['Path'])
@@ -77,7 +77,7 @@ class WebHDFS(object):
 
         self._op('PUT', path, 'SETOWNER', query=query)
 
-    def read(self, path, offset=0, length=0, buffersize=0):
+    def read(self, path, offset=0, length=0, buffersize=0, follow_redirects=False):
         # FIXME: Find a way to unite handling of optional parameters
         query = {}
         if offset:
@@ -88,7 +88,7 @@ class WebHDFS(object):
             query['buffersize'] = intparam(buffersize)
 
         resp = self._op('GET', path, 'OPEN', query=query)
-        url = self._get_redirect(resp)
+        url = self._get_redirect(resp, follow_redirects=follow_redirects)
         return requests.get(url).content
 
     def put(self, local, path, overwrite=False, blocksize=0, replication=0,
@@ -106,11 +106,11 @@ class WebHDFS(object):
 
         self._put('CREATE', 'PUT', local, path, query)
 
-    def append(self, local, path, buffersize=0):
+    def append(self, local, path, buffersize=0, follow_redirects=False):
         query = {}
         if buffersize:
             query['buffersize'] = intparam(buffersize)
-        self._put('APPEND', 'POST', local, path, query)
+        self._put('APPEND', 'POST', local, path, query, follow_redirects=follow_redirects)
 
     @jsonpath(['boolean'])
     def mkdir(self, path, permission=0):
@@ -132,12 +132,12 @@ class WebHDFS(object):
 
 
     # Below here are some utility functions
-    def _put(self, op, method, local, path, query):
+    def _put(self, op, method, local, path, query, follow_redirects=False):
         if not isfile(local):
             raise WebHDFSError('put error: {0} not found'.format(local))
 
         resp = self._op(method, path, op, query)
-        url = self._get_redirect(resp)
+        url = self._get_redirect(resp, follow_redirects=follow_redirects)
 
         with open(local) as fo:
             data = fo.read()
@@ -145,12 +145,13 @@ class WebHDFS(object):
         resp = requests.request(method, url, data=data)
         self._check_resp(resp)
 
-    def _get_redirect(self, resp):
-        # The host in the redirect URL is *internal* one, so we need to fix
-        # the url. Otherwise we'd just follow the redirects
+    def _get_redirect(self, resp, follow_redirects=False):
         url = urlparse(resp.headers['Location'])
-        host, port = url.netloc.split(':')
-        url = url._replace(netloc='{0}:{1}'.format(self.host, port))
+        if not follow_redirects:
+            # The host in the redirect URL is *internal* one, so we need to fix
+            # the url. Otherwise we'd just follow the redirects            
+            host, port = url.netloc.split(':')
+            url = url._replace(netloc='{0}:{1}'.format(self.host, port))
         return url.geturl()
 
     def _check_resp(self, resp):

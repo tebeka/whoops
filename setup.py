@@ -5,6 +5,11 @@ try:
 except ImportError:
     from distutils.core import setup
 
+try:
+    import wheel
+except ImportError:
+    pass
+
 install_requires = ['requests']
 if version_info[:2] < (2, 7):
     install_requires.append('argparse')

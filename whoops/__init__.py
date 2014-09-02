@@ -9,7 +9,7 @@ else:
     from urlparse import urlparse
     from urllib import urlencode
 
-__version__ = '0.2.1'
+__version__ = '0.2.2'
 HOST, PORT = 'localhost', 50070
 
 

@@ -35,4 +35,6 @@ setup(
         'Topic :: Software Development :: Libraries :: Python Modules',
     ],
     install_requires=['requests'],
+    test_suite='nose.collector',
+    tests_require=['nose'],
 )

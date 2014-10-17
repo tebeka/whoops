@@ -151,7 +151,7 @@ class WebHDFS(object):
             # The host in the redirect URL is *internal* one, so we need to fix
             # the url. Otherwise we'd just follow the redirects            
             host, port = url.netloc.split(':')
-            url = url._replace(netloc='{0}:{1}'.format(self.host, port))
+            url = url._replace(netloc='{0}:{1}'.format(self.host, self.port))
         return url.geturl()
 
     def _check_resp(self, resp):
